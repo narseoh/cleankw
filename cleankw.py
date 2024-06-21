@@ -4,14 +4,12 @@ import unidecode
 from io import BytesIO
 
 # Fonction pour nettoyer les mots clés
-def clean_keywords(df):
+def clean_keywords(df, mots_inutiles):
     if 'mots clés' not in df.columns:
         st.error("Le fichier Excel doit contenir une colonne nommée 'mots clés'.")
         return df
 
     df['mots clés modifiés'] = ''
-    mots_inutiles = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
-
     for index, row in df.iterrows():
         mots_cles = str(row['mots clés'])
         mots_cles = mots_cles.replace("d'", "").replace("l'", "")
@@ -30,6 +28,16 @@ def clean_keywords(df):
 # Interface Streamlit
 st.title("Keyword List Cleaner")
 
+# Liste des mots inutiles par défaut
+mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
+mots_inutiles = st.text_area(
+    "Mots inutiles (séparés par des virgules)",
+    value=", ".join(mots_inutiles_defaut)
+).split(',')
+
+# Enlever les espaces inutiles et mettre en minuscule
+mots_inutiles = [mot.strip().lower() for mot in mots_inutiles]
+
 uploaded_file = st.file_uploader("Téléchargez un fichier Excel avec une colonne 'mots clés'", type=["xlsx"])
 
 if uploaded_file is not None:
@@ -39,9 +47,14 @@ if uploaded_file is not None:
         st.write(df)
 
         if st.button("Nettoyer les mots clés"):
-            df_cleaned = clean_keywords(df)
+            df_cleaned = clean_keywords(df, mots_inutiles)
             st.write("Données nettoyées :")
             st.write(df_cleaned)
+
+            # Affichage des mots clés les plus fréquents
+            mots_freq = df_cleaned['mots clés modifiés'].value_counts()
+            st.write("Mots clés les plus fréquents :")
+            st.write(mots_freq)
 
             # Préparation du fichier pour le téléchargement
             output = BytesIO()
