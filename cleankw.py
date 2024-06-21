@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import unidecode
 from io import BytesIO
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Fonction pour nettoyer les mots clés
 def clean_keywords(df, mots_inutiles):
@@ -41,7 +45,7 @@ def clean_keywords(df, mots_inutiles):
     return df
 
 # Interface Streamlit
-st.title("Keyword List Cleaner 6")
+st.title("Keyword List Cleaner and Clustering 7")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
@@ -76,6 +80,24 @@ if uploaded_file is not None:
             mots_freq = df_cleaned['mots clés modifiés'].value_counts()
             st.write("Mots clés les plus fréquents :")
             st.write(mots_freq)
+
+            # Clustering des mots clés
+            if st.button("Regrouper les mots clés similaires"):
+                vectorizer = TfidfVectorizer()
+                X = vectorizer.fit_transform(df_cleaned['mots clés modifiés'])
+
+                # Utiliser K-means pour le clustering
+                kmeans = KMeans(n_clusters=5, random_state=42)
+                df_cleaned['cluster'] = kmeans.fit_predict(X)
+
+                st.write("Clusters de mots clés :")
+                st.write(df_cleaned[['mots clés modifiés', 'cluster']])
+
+                # Visualisation des clusters
+                plt.figure(figsize=(10, 6))
+                sns.countplot(data=df_cleaned, x='cluster')
+                plt.title("Répartition des mots clés par cluster")
+                st.pyplot(plt)
 
             # Préparation du fichier pour le téléchargement
             output = BytesIO()
