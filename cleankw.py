@@ -1,4 +1,3 @@
-pip install scikit-learn matplotlib seaborn
 import streamlit as st
 import pandas as pd
 import unidecode
