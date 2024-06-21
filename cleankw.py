@@ -30,13 +30,20 @@ st.title("Keyword List Cleaner")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
-mots_inutiles = st.text_area(
-    "Mots inutiles (séparés par des virgules)",
-    value=", ".join(mots_inutiles_defaut)
-).split(',')
 
-# Enlever les espaces inutiles et mettre en minuscule
-mots_inutiles = [mot.strip().lower() for mot in mots_inutiles]
+# Zone de texte pour permettre à l'utilisateur d'ajouter des mots inutiles
+mots_inutiles_ajoutes = st.text_area(
+    "Ajoutez vos propres mots inutiles (séparés par des virgules)",
+    value=""
+)
+
+# Fusionner les mots inutiles par défaut avec ceux ajoutés par l'utilisateur
+if mots_inutiles_ajoutes:
+    mots_inutiles_personnalises = mots_inutiles_ajoutes.split(',')
+    mots_inutiles_personnalises = [mot.strip().lower() for mot in mots_inutiles_personnalises]
+    mots_inutiles = mots_inutiles_defaut + mots_inutiles_personnalises
+else:
+    mots_inutiles = mots_inutiles_defaut
 
 uploaded_file = st.file_uploader("Téléchargez un fichier Excel avec une colonne 'mots clés'", type=["xlsx"])
 
