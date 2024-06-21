@@ -33,25 +33,28 @@ st.title("Nettoyeur de mots clés")
 uploaded_file = st.file_uploader("Téléchargez un fichier Excel avec une colonne 'mots clés'", type=["xlsx"])
 
 if uploaded_file is not None:
-    df = pd.read_excel(uploaded_file)
-    st.write("Aperçu des données téléchargées :")
-    st.write(df)
+    try:
+        df = pd.read_excel(uploaded_file)
+        st.write("Aperçu des données téléchargées :")
+        st.write(df)
 
-    if st.button("Nettoyer les mots clés"):
-        df_cleaned = clean_keywords(df)
-        st.write("Données nettoyées :")
-        st.write(df_cleaned)
+        if st.button("Nettoyer les mots clés"):
+            df_cleaned = clean_keywords(df)
+            st.write("Données nettoyées :")
+            st.write(df_cleaned)
 
-        # Préparation du fichier pour le téléchargement
-        output = BytesIO()
-        writer = pd.ExcelWriter(output, engine='openpyxl')
-        df_cleaned.to_excel(writer, index=False, sheet_name='Feuille1')
-        writer.save()
-        processed_data = output.getvalue()
+            # Préparation du fichier pour le téléchargement
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='openpyxl')
+            df_cleaned.to_excel(writer, index=False, sheet_name='Feuille1')
+            writer.close()
+            processed_data = output.getvalue()
 
-        st.download_button(
-            label="Télécharger les données nettoyées",
-            data=processed_data,
-            file_name='nom_du_fichier_modifie.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+            st.download_button(
+                label="Télécharger les données nettoyées",
+                data=processed_data,
+                file_name='nom_du_fichier_modifie.xlsx',
+                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+    except Exception as e:
+        st.error(f"Erreur lors du chargement du fichier : {e}")
