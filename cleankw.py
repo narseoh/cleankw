@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import unidecode
-from io import BytesIO
+import numpy as np
+import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -44,19 +44,20 @@ def clean_keywords(df, mots_inutiles):
 
     return df
 
-# Fonction de clustering
-def perform_clustering(df_cleaned):
-    vectorizer = TfidfVectorizer()
-    X = vectorizer.fit_transform(df_cleaned['mots clés modifiés'])
+# Fonction pour catégoriser les mots clés
+def categorize_keywords(df_cleaned):
+    # Utiliser un modèle d'embeddings pré-entraîné (par exemple GloVe) pour obtenir des vecteurs de mots clés
+    # Ici, nous utilisons des embeddings aléatoires comme exemple
+    embeddings = np.random.rand(len(df_cleaned), 50)  # Exemple de vecteurs aléatoires, à remplacer par des embeddings réels
 
-    # Utiliser K-means pour le clustering
+    # Utiliser K-means pour le clustering des vecteurs
     kmeans = KMeans(n_clusters=5, random_state=42)
-    df_cleaned['cluster'] = kmeans.fit_predict(X)
+    df_cleaned['categorie'] = kmeans.fit_predict(embeddings)
 
     return df_cleaned
 
 # Interface Streamlit
-st.title("Keyword List Cleaner and Clustering 8")
+st.title("Keyword List Categorizer 9")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
@@ -81,35 +82,29 @@ if uploaded_file is not None:
         # Nettoyer les mots clés
         df_cleaned = clean_keywords(df, mots_inutiles)
         
-        # Clusterisation des mots clés en tâche de fond
-        df_with_clusters = perform_clustering(df_cleaned)
+        # Catégoriser les mots clés en tâche de fond
+        df_categorized = categorize_keywords(df_cleaned)
 
         st.write("Mots inutiles pris en compte :")
         st.write(mots_inutiles)
 
-        st.write("Données nettoyées et clusterisées :")
-        st.write(df_with_clusters)
+        st.write("Données nettoyées et catégorisées :")
+        st.write(df_categorized)
 
-        # Affichage des mots clés les plus fréquents
-        mots_freq = df_with_clusters['mots clés modifiés'].value_counts()
-        st.write("Mots clés les plus fréquents :")
-        st.write(mots_freq)
-
-        # Visualisation des clusters
-        plt.figure(figsize=(10, 6))
-        sns.countplot(data=df_with_clusters, x='cluster')
-        plt.title("Répartition des mots clés par cluster")
-        st.pyplot(plt)
+        # Affichage des catégories de mots clés
+        categorie_count = df_categorized['categorie'].value_counts().sort_index()
+        st.write("Répartition des catégories :")
+        st.write(categorie_count)
 
         # Préparation du fichier pour le téléchargement
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='openpyxl')
-        df_with_clusters.to_excel(writer, index=False, sheet_name='Feuille1')
+        df_categorized.to_excel(writer, index=False, sheet_name='Feuille1')
         writer.close()
         processed_data = output.getvalue()
 
         st.download_button(
-            label="Télécharger les données nettoyées et clusterisées",
+            label="Télécharger les données nettoyées et catégorisées",
             data=processed_data,
             file_name='nom_du_fichier_modifie.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
