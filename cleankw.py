@@ -12,11 +12,22 @@ def clean_keywords(df, mots_inutiles):
     df['mots clés modifiés'] = ''
     for index, row in df.iterrows():
         mots_cles = str(row['mots clés'])
-        mots_cles = mots_cles.replace("d'", "").replace("l'", "")
+        
+        # Utiliser unidecode pour translittérer les caractères accentués
         mots_cles = unidecode.unidecode(mots_cles)
+        
+        # Remplacer les apostrophes courantes dans les mots
+        mots_cles = mots_cles.replace("d'", "").replace("l'", "")
+        
+        # Supprimer les caractères non alphanumériques
         mots_cles = ''.join(c if c.isalnum() else ' ' for c in mots_cles)
+        
+        # Supprimer les mots inutiles
         mots_cles = ' '.join([mot for mot in mots_cles.split() if mot.lower() not in mots_inutiles])
+        
+        # Remplacer les apostrophes restantes par des espaces
         mots_cles = mots_cles.replace(" d ", " ").replace(" l ", " ")
+        
         df.at[index, 'mots clés modifiés'] = mots_cles
 
     if 'VRM' in df.columns:
@@ -26,7 +37,7 @@ def clean_keywords(df, mots_inutiles):
     return df
 
 # Interface Streamlit
-st.title("Keyword List Cleaner 3")
+st.title("Keyword List Cleaner 4")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
