@@ -28,7 +28,7 @@ def clean_keywords(df):
     return df
 
 # Interface Streamlit
-st.title("Nettoyeur de mots clés")
+st.title("Keyword List Cleaner")
 
 uploaded_file = st.file_uploader("Téléchargez un fichier Excel avec une colonne 'mots clés'", type=["xlsx"])
 
