@@ -1,11 +1,7 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import spacy
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-import seaborn as sns
+import unidecode
+from io import BytesIO
 
 # Fonction pour nettoyer les mots clés
 def clean_keywords(df, mots_inutiles):
@@ -44,20 +40,8 @@ def clean_keywords(df, mots_inutiles):
 
     return df
 
-# Fonction pour catégoriser les mots clés
-def categorize_keywords(df_cleaned):
-    # Utiliser un modèle d'embeddings pré-entraîné (par exemple GloVe) pour obtenir des vecteurs de mots clés
-    # Ici, nous utilisons des embeddings aléatoires comme exemple
-    embeddings = np.random.rand(len(df_cleaned), 50)  # Exemple de vecteurs aléatoires, à remplacer par des embeddings réels
-
-    # Utiliser K-means pour le clustering des vecteurs
-    kmeans = KMeans(n_clusters=5, random_state=42)
-    df_cleaned['categorie'] = kmeans.fit_predict(embeddings)
-
-    return df_cleaned
-
 # Interface Streamlit
-st.title("Keyword List Categorizer 10")
+st.title("Keyword List Cleaner")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
@@ -79,36 +63,32 @@ if uploaded_file is not None:
         st.write("Aperçu des données téléchargées :")
         st.write(df)
 
-        # Nettoyer les mots clés
-        df_cleaned = clean_keywords(df, mots_inutiles)
-        
-        # Catégoriser les mots clés en tâche de fond
-        df_categorized = categorize_keywords(df_cleaned)
+        if st.button("Nettoyer les mots clés"):
+            df_cleaned = clean_keywords(df, mots_inutiles)
 
-        st.write("Mots inutiles pris en compte :")
-        st.write(mots_inutiles)
+            st.write("Mots inutiles pris en compte :")
+            st.write(mots_inutiles)
 
-        st.write("Données nettoyées et catégorisées :")
-        st.write(df_categorized)
+            st.write("Données nettoyées :")
+            st.write(df_cleaned)
 
-        # Affichage des catégories de mots clés
-        categorie_count = df_categorized['categorie'].value_counts().sort_index()
-        st.write("Répartition des catégories :")
-        st.write(categorie_count)
+            # Affichage des mots clés les plus fréquents
+            mots_freq = df_cleaned['mots clés modifiés'].value_counts()
+            st.write("Mots clés les plus fréquents :")
+            st.write(mots_freq)
 
-        # Préparation du fichier pour le téléchargement
-        output = BytesIO()
-        writer = pd.ExcelWriter(output, engine='openpyxl')
-        df_categorized.to_excel(writer, index=False, sheet_name='Feuille1')
-        writer.close()
-        processed_data = output.getvalue()
+            # Préparation du fichier pour le téléchargement
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='openpyxl')
+            df_cleaned.to_excel(writer, index=False, sheet_name='Feuille1')
+            writer.close()
+            processed_data = output.getvalue()
 
-        st.download_button(
-            label="Télécharger les données nettoyées et catégorisées",
-            data=processed_data,
-            file_name='nom_du_fichier_modifie.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-
+            st.download_button(
+                label="Télécharger les données nettoyées",
+                data=processed_data,
+                file_name='nom_du_fichier_modifie.xlsx',
+                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
     except Exception as e:
         st.error(f"Erreur lors du chargement du fichier : {e}")
