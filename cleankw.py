@@ -26,6 +26,10 @@ def clean_keywords(df, mots_inutiles):
         mots_cles = ' '.join([mot for mot in mots_cles.split() if mot.lower() not in mots_inutiles])
         
         # Supprimer les occurrences de "l " au début des mots clés
+        if mots_cles.startswith("l "):
+            mots_cles = mots_cles[2:]
+        
+        # Remplacer les " l " au milieu des chaînes par un espace
         mots_cles = mots_cles.replace(" l ", " ")
 
         df.at[index, 'mots clés modifiés'] = mots_cles
@@ -37,7 +41,7 @@ def clean_keywords(df, mots_inutiles):
     return df
 
 # Interface Streamlit
-st.title("Keyword List Cleaner 5")
+st.title("Keyword List Cleaner 6")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
