@@ -26,7 +26,7 @@ def clean_keywords(df, mots_inutiles):
     return df
 
 # Interface Streamlit
-st.title("Keyword List Cleaner 2")
+st.title("Keyword List Cleaner 3")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
@@ -50,6 +50,10 @@ if uploaded_file is not None:
 
         if st.button("Nettoyer les mots clés"):
             df_cleaned = clean_keywords(df, mots_inutiles)
+
+            st.write("Mots inutiles pris en compte :")
+            st.write(mots_inutiles)
+
             st.write("Données nettoyées :")
             st.write(df_cleaned)
 
