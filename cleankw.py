@@ -44,8 +44,19 @@ def clean_keywords(df, mots_inutiles):
 
     return df
 
+# Fonction de clustering
+def perform_clustering(df_cleaned):
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(df_cleaned['mots clés modifiés'])
+
+    # Utiliser K-means pour le clustering
+    kmeans = KMeans(n_clusters=5, random_state=42)
+    df_cleaned['cluster'] = kmeans.fit_predict(X)
+
+    return df_cleaned
+
 # Interface Streamlit
-st.title("Keyword List Cleaner and Clustering 7")
+st.title("Keyword List Cleaner and Clustering 8")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
@@ -67,50 +78,42 @@ if uploaded_file is not None:
         st.write("Aperçu des données téléchargées :")
         st.write(df)
 
-        if st.button("Nettoyer les mots clés"):
-            df_cleaned = clean_keywords(df, mots_inutiles)
+        # Nettoyer les mots clés
+        df_cleaned = clean_keywords(df, mots_inutiles)
+        
+        # Clusterisation des mots clés en tâche de fond
+        df_with_clusters = perform_clustering(df_cleaned)
 
-            st.write("Mots inutiles pris en compte :")
-            st.write(mots_inutiles)
+        st.write("Mots inutiles pris en compte :")
+        st.write(mots_inutiles)
 
-            st.write("Données nettoyées :")
-            st.write(df_cleaned)
+        st.write("Données nettoyées et clusterisées :")
+        st.write(df_with_clusters)
 
-            # Affichage des mots clés les plus fréquents
-            mots_freq = df_cleaned['mots clés modifiés'].value_counts()
-            st.write("Mots clés les plus fréquents :")
-            st.write(mots_freq)
+        # Affichage des mots clés les plus fréquents
+        mots_freq = df_with_clusters['mots clés modifiés'].value_counts()
+        st.write("Mots clés les plus fréquents :")
+        st.write(mots_freq)
 
-            # Clustering des mots clés
-            if st.button("Regrouper les mots clés similaires"):
-                vectorizer = TfidfVectorizer()
-                X = vectorizer.fit_transform(df_cleaned['mots clés modifiés'])
+        # Visualisation des clusters
+        plt.figure(figsize=(10, 6))
+        sns.countplot(data=df_with_clusters, x='cluster')
+        plt.title("Répartition des mots clés par cluster")
+        st.pyplot(plt)
 
-                # Utiliser K-means pour le clustering
-                kmeans = KMeans(n_clusters=5, random_state=42)
-                df_cleaned['cluster'] = kmeans.fit_predict(X)
+        # Préparation du fichier pour le téléchargement
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine='openpyxl')
+        df_with_clusters.to_excel(writer, index=False, sheet_name='Feuille1')
+        writer.close()
+        processed_data = output.getvalue()
 
-                st.write("Clusters de mots clés :")
-                st.write(df_cleaned[['mots clés modifiés', 'cluster']])
+        st.download_button(
+            label="Télécharger les données nettoyées et clusterisées",
+            data=processed_data,
+            file_name='nom_du_fichier_modifie.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
-                # Visualisation des clusters
-                plt.figure(figsize=(10, 6))
-                sns.countplot(data=df_cleaned, x='cluster')
-                plt.title("Répartition des mots clés par cluster")
-                st.pyplot(plt)
-
-            # Préparation du fichier pour le téléchargement
-            output = BytesIO()
-            writer = pd.ExcelWriter(output, engine='openpyxl')
-            df_cleaned.to_excel(writer, index=False, sheet_name='Feuille1')
-            writer.close()
-            processed_data = output.getvalue()
-
-            st.download_button(
-                label="Télécharger les données nettoyées",
-                data=processed_data,
-                file_name='nom_du_fichier_modifie.xlsx',
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
     except Exception as e:
         st.error(f"Erreur lors du chargement du fichier : {e}")
