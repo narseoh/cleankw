@@ -26,24 +26,19 @@ def clean_keywords(df, mots_inutiles):
     return df
 
 # Interface Streamlit
-st.title("Keyword List Cleaner")
+st.title("Keyword List Cleaner 2")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
 
-# Zone de texte pour permettre à l'utilisateur d'ajouter des mots inutiles
-mots_inutiles_ajoutes = st.text_area(
-    "Ajoutez vos propres mots inutiles (séparés par des virgules)",
-    value=""
+# Zone de texte pour permettre à l'utilisateur de voir et de modifier les mots inutiles par défaut
+mots_inutiles_texte = st.text_area(
+    "Mots inutiles (séparés par des virgules)",
+    value=", ".join(mots_inutiles_defaut)
 )
 
-# Fusionner les mots inutiles par défaut avec ceux ajoutés par l'utilisateur
-if mots_inutiles_ajoutes:
-    mots_inutiles_personnalises = mots_inutiles_ajoutes.split(',')
-    mots_inutiles_personnalises = [mot.strip().lower() for mot in mots_inutiles_personnalises]
-    mots_inutiles = mots_inutiles_defaut + mots_inutiles_personnalises
-else:
-    mots_inutiles = mots_inutiles_defaut
+# Conversion de la chaîne de caractères en liste, en supprimant les espaces inutiles et en mettant les mots en minuscule
+mots_inutiles = [mot.strip().lower() for mot in mots_inutiles_texte.split(',')]
 
 uploaded_file = st.file_uploader("Téléchargez un fichier Excel avec une colonne 'mots clés'", type=["xlsx"])
 
