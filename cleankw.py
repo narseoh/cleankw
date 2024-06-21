@@ -57,7 +57,7 @@ def categorize_keywords(df_cleaned):
     return df_cleaned
 
 # Interface Streamlit
-st.title("Keyword List Categorizer 9")
+st.title("Keyword List Categorizer 10")
 
 # Liste des mots inutiles par défaut
 mots_inutiles_defaut = ['un', 'une', 'de', 'du', 'des', 'la', 'le', 'les', 'à', ' a ', 'au', 'aux', 'et', 'en']
